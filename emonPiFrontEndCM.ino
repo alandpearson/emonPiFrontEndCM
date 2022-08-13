@@ -40,8 +40,9 @@ emonhub.conf node decoder (assuming Node 5):
 
 #include <emonLibCM.h>                                                 // OEM CM library
 
-#include <emonEProm.h>
-// OEM EPROM library
+#include <emonEProm.h>                                                // OEM EPROM library
+
+#include <OneWire.h>
 
 // RFM interface
 #include "spi.h"                                                       // Requires "RFM69 Native" JeeLib Driver
@@ -52,10 +53,10 @@ bool rfDataAvailable = false;
 
 byte nativeMsg[66];                                                    // 'Native' format message buffer
 
-#define MAXMSG 66                                                      // Max length of o/g message
+#define MAXMSG 62                                                      // Max length of o/g message - payload can be 62 bytes max in RFM69
 char outmsg[MAXMSG];                                                   // outgoing message (to emonGLCD etc)
 byte outmsgLength;                                                     // length of message: non-zero length triggers transmission
-
+byte txDestId = 0 ;                                                    // 
 struct {                                                               // Ancilliary information
   byte srcNode = 0;
   byte msgLength = 0;
@@ -263,7 +264,7 @@ void loop()
 {
   if (digitalRead(shutdown_switch_pin) == 0 )
   {
-    digitalWrite(emonpi_GPIO_pin, HIGH);                               // if emonPi shutdown button pressed then send signal to the Pi on GPIO 11
+    //digitalWrite(emonpi_GPIO_pin, HIGH);                               // if emonPi shutdown button pressed then send signal to the Pi on GPIO 11
     shutdown_switch_last_state = true;
   }
   else
@@ -279,6 +280,12 @@ void loop()
 //-------------------------------------------------------------------------------------------------------------------------------------------
 
   int len = rf.receive(&nativeMsg, sizeof(nativeMsg));                 // Poll the RFM buffer and extract the data
+
+  if (len >0) {
+    Serial.print("got something len:");
+    Serial.println(len);
+  }
+
   if ((EEProm.rfOn & RFRX) && len > 1)
   {
     rfInfo.crc = true;
@@ -290,8 +297,7 @@ void loop()
     Serial.print(F("OK"));                                              // Bad packets (crc failure) are discarded by RFM69CW
     print_frame(rfInfo.msgLength);		                                  // Print received data
     double_LED_flash();
-  }
-  
+  } 
 //-------------------------------------------------------------------------------------------------------------------------------------------
 // RF Data handler - outbound ***************************************************************************************************************
 //-------------------------------------------------------------------------------------------------------------------------------------------
@@ -299,10 +305,8 @@ void loop()
 
 	if ((EEProm.rfOn & RFTX) && outmsgLength) {                           //if command 'outmsg' is waiting to be sent then let's send it
     digitalWrite(LEDpin, HIGH); delay(200); digitalWrite(LEDpin, LOW);
-    showString(PSTR(" -> "));
-    Serial.print((word) outmsgLength);
-    showString(PSTR(" b\n"));
-    rf.send(0, (void *)outmsg, outmsgLength);                          //  void RF69<SPI>::send (uint8_t header, const void* ptr, int len) {
+    Serial.print ("Sending ") ; Serial.print((word) outmsgLength); Serial.println(" bytes\n");
+    rf.send(txDestId, (void *)outmsg, outmsgLength);                    //  void RF69<SPI>::send (uint8_t header, const void* ptr, int len) {
     outmsgLength = 0;
 	}
 
