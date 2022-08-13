@@ -264,7 +264,7 @@ void loop()
 {
   if (digitalRead(shutdown_switch_pin) == 0 )
   {
-    //digitalWrite(emonpi_GPIO_pin, HIGH);                               // if emonPi shutdown button pressed then send signal to the Pi on GPIO 11
+    digitalWrite(emonpi_GPIO_pin, HIGH);                               // if emonPi shutdown button pressed then send signal to the Pi on GPIO 11
     shutdown_switch_last_state = true;
   }
   else
@@ -281,10 +281,6 @@ void loop()
 
   int len = rf.receive(&nativeMsg, sizeof(nativeMsg));                 // Poll the RFM buffer and extract the data
 
-  if (len >0) {
-    Serial.print("got something len:");
-    Serial.println(len);
-  }
 
   if ((EEProm.rfOn & RFRX) && len > 1)
   {
@@ -305,7 +301,7 @@ void loop()
 
 	if ((EEProm.rfOn & RFTX) && outmsgLength) {                           //if command 'outmsg' is waiting to be sent then let's send it
     digitalWrite(LEDpin, HIGH); delay(200); digitalWrite(LEDpin, LOW);
-    Serial.print ("Sending ") ; Serial.print((word) outmsgLength); Serial.println(" bytes\n");
+    Serial.print ("Sending ") ; Serial.print((word) outmsgLength); Serial.print(" bytes "); Serial.print("to node " ); Serial.println(txDestId) ;
     rf.send(txDestId, (void *)outmsg, outmsgLength);                    //  void RF69<SPI>::send (uint8_t header, const void* ptr, int len) {
     outmsgLength = 0;
 	}
