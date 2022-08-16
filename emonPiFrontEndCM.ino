@@ -15,7 +15,7 @@
 //----------------------------emonPi Firmware Version---------------------------------------------------------------------------------------- 
 */
 
-const byte firmware_version[3] = {1,0,0};
+const byte firmware_version[3] = {1,0,1};
 /*
 V1.0.0   10/7/2021 Derived from emonLibCM examples and original emonPi sketch, that being derived from 
             https://github.com/openenergymonitor/emonpi/blob/master/Atmega328/emonPi_RFM69CW_RF12Demo_DiscreteSampling
@@ -270,8 +270,8 @@ void loop()
   else
   {
     digitalWrite(emonpi_GPIO_pin, LOW);
-    if (shutdown_switch_last_state)
-      asm volatile ("  jmp 0");
+   // if (shutdown_switch_last_state)
+   //   asm volatile ("  jmp 0");
 
   }
   
@@ -329,6 +329,7 @@ void loop()
 
   if (EmonLibCM_Ready())   
   {
+    
     single_LED_flash();                                                // single flash of LED on local CT sample
 
     emonPi.power1 = EmonLibCM_getRealPower(0);                       // Copy the desired variables ready for transmission 
@@ -364,18 +365,18 @@ void loop()
       Serial.print(F(", f:")); Serial.print(EmonLibCM_getLineFrequency());
       Serial.println();
       
-      lcd_print_currents(current_lcd_i2c_addr, EmonLibCM_getIrms(0), EmonLibCM_getIrms(1), EmonLibCM_getPF(0), EmonLibCM_getPF(1));
+      //lcd_print_currents(current_lcd_i2c_addr, EmonLibCM_getIrms(0), EmonLibCM_getIrms(1), EmonLibCM_getPF(0), EmonLibCM_getPF(1));
    }
     delay(50);
 
     // Save energy & pulse count values to EEPROM
-    storeEValues(emonPi.E1, emonPi.E2, emonPi.pulseCount, emonPi.pulse2Count);
+    //storeEValues(emonPi.E1, emonPi.E2, emonPi.pulseCount, emonPi.pulse2Count);
   }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------
 // Backlight (also controlled from Pi) ******************************************************************************************************
 //-------------------------------------------------------------------------------------------------------------------------------------------
-
+/*
   if (backlightTimer)
   {
     backlightOn = millis();
@@ -388,6 +389,8 @@ void loop()
     lcd.noBacklight();                                                   // It can get left on if this is restarted without the Pi rebooting    
     backlight = false;
   }
+
+*/
 } 
 
 

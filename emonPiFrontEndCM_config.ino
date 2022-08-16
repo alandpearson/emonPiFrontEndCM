@@ -409,44 +409,43 @@ void getCalibration(void)
         case 't' :
           /*  Format expected: t[x] [y] [y] ...
           */
+
           set_temperatures();
           break;
 
-        case 'T': // write alpha-numeric string to be transmitted.
-          outmsgLength = 0;
-          char c = 0;
+        case 'T': { // write alpha-numeric string to be transmitted.
+            outmsgLength = 0;
+            char c = 0;
+            while (Serial.peek() ) {
+              long txDataByte = Serial.parseInt();
+              if (txDataByte > 255 || txDataByte < 0) {
+                Serial.println("Tx Data invalid.. each byte must be between 0 & 255");
+                Serial.println("Usage:T byte1,byte2,byteN,dest_node_id, Max number of bytes = 60");
+                outmsgLength = 0 ;        //make sure invalid data not sent
+                break;
+              } else if (Serial.peek() == -1 && txDataByte == 0) {
+                //done, got all the bytes from Serial
+                if (outmsgLength != 0)
+                  outmsgLength-- ;      //the actual length of the msg is 1 less as the 1st byte received is not part of the payload
+                break ;
 
-          while (Serial.peek() ) {
-            long txDataByte = Serial.parseInt();
-            if (txDataByte > 255 || txDataByte < 0) {
-              Serial.println("Tx Data invalid.. each byte must be between 0 & 255");
-              Serial.println("Usage:T byte1,byte2,byteN,dest_node_id, Max number of bytes = 60");
-              outmsgLength = 0 ;        //make sure invalid data not sent
-              break;
-            } else if (Serial.peek() == -1 && txDataByte == 0) {
-              //done, got all the bytes from Serial
-              if (outmsgLength != 0)
-                 outmsgLength-- ;      //the actual length of the msg is 1 less as the 1st byte received is not part of the payload
-              break ;
-
-            } else {
-              Serial.print("read:") ;
-              Serial.println(txDataByte) ;
-              if (outmsgLength == 0) {
-                //first byte should be the destination ID, 0 for broadcast
-                //This doesn't become part of the message
-                txDestId = txDataByte ;
-                outmsgLength++ ;
               } else {
-                outmsg[outmsgLength - 1] = txDataByte ; //the outmsg index is always -1 due to the destID not being part of outmsg
-                outmsgLength++;
+                if (outmsgLength == 0) {
+                  //first byte should be the destination ID, 0 for broadcast
+                  //This doesn't become part of the message
+                  txDestId = txDataByte ;
+                  outmsgLength++ ;
+                } else {
+                  outmsg[outmsgLength - 1] = txDataByte ; //the outmsg index is always -1 due to the destID not being part of outmsg
+                  outmsgLength++;
+                }
               }
             }
+            Serial.print ("Queueing  ") ; Serial.print(outmsgLength); Serial.print (" bytes to send to node ") ; Serial.println (txDestId);
+            break;
           }
-          Serial.print ("Queueing  ") ; Serial.print(outmsgLength); Serial.print (" bytes to send to node ") ; Serial.println (txDestId);
-          break;
-
         case 'v': // print firmware version
+
           Serial.print(F("|emonPi CM V")); printVersion();
           break;
 
@@ -454,6 +453,8 @@ void getCalibration(void)
           /*
             Format expected: V0 | V1
           */
+          Serial.println("hello V");
+
           verbose = (bool)Serial.parseInt();
           Serial.print(F("|Verbose mode ")); Serial.println(verbose ? F("on") : F("off"));
           break;
@@ -463,6 +464,7 @@ void getCalibration(void)
             Wireless off = 0, tx = 1, rx = 2, tx+rx  = 3
             Format expected: w0 - w3
           */
+
           EEProm.rfOn = Serial.parseInt();
           if (verbose)
           {
@@ -474,6 +476,7 @@ void getCalibration(void)
           /*
             Zero all energy values
           */
+
           zeroEValues();
           EmonLibCM_setWattHour(0, 0);
           EmonLibCM_setWattHour(1, 0);
