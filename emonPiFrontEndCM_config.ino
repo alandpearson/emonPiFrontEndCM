@@ -483,7 +483,7 @@ void getCalibration(void) {
         int numChars = 250;
         char receivedChars[numChars];    // enough to receive a CSV line of 62 3-digit values
         byte ndx = 0;                    // Where we are in the receivedChars buffer
-        unsigned long serTimeout = 1000; // 1 sec serial timeout
+        unsigned long serTimeout = 200; // 1 sec serial timeout
 
         receivedChars[0] = '\0';
         Serial.read(); // eat the 'T'
@@ -503,21 +503,21 @@ void getCalibration(void) {
                 ndx = numChars - 1;
               }
             } else {
+              //only reached with direct serial input
+              //emonhub does not add newline charcters
               serTimeout = millis() - 100; // end of input, kill timeout loop
-              receivedChars[ndx] = '\0';
-
               break;
             }
           }
         }
-        // receivedChars[ndx] = '\0';
-        strtokIndx = strtok(receivedChars, ","); // setup and find the first characters before , or space
+        receivedChars[ndx] = '\0';
 
-        while (strtokIndx != NULL || strtokIndx != 0) {
+        strtokIndx = strtok(receivedChars, ","); // setup and find the first characters before , or space
+        while (strtokIndx != NULL && strtokIndx != 0) {
 
           long txDataByte = strtol(strtokIndx, &endofstring, 10); // convert this part to an integer
-          if (endofstring == strtokIndx || (txDataByte < 0 || txDataByte > 255)) {
-            Serial.println(F("Tx Data invalid each byte must be between 0 & 255"));
+          if ((endofstring == strtokIndx) || (txDataByte < 0 || txDataByte > 255)) {
+            Serial.print(F("Tx Data invalid each byte must be between 0 & 255:") );
             Serial.println(F("Usage:T dest,byte1,byteN (Max bytes=60)"));
             outmsgLength = 0; // make sure invalid data not sent
             break;
