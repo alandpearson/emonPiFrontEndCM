@@ -1,6 +1,6 @@
 ## emonPiFrontEndCM
 
-#### Version 1.0.0
+#### Version 1.0.2
 
 Continuous monitoring & native RFM69 radio firmware for the emonPi front end.
 
