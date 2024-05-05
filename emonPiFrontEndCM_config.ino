@@ -483,7 +483,7 @@ void getCalibration(void) {
         int numChars = 250;
         char receivedChars[numChars];    // enough to receive a CSV line of 62 3-digit values
         byte ndx = 0;                    // Where we are in the receivedChars buffer
-        unsigned long serTimeout = 200; // 1 sec serial timeout
+        unsigned long serTimeout = 100; // 100 msec serial timeout
 
         receivedChars[0] = '\0';
         Serial.read(); // eat the 'T'
@@ -497,15 +497,12 @@ void getCalibration(void) {
             if (c != 10 && c != 13) {
               receivedChars[ndx] = c;
               ndx++;
-
               if (ndx >= numChars) {
                 // stop buffer overrun
                 ndx = numChars - 1;
               }
             } else {
-              //only reached with direct serial input
-              //emonhub does not add newline charcters
-              serTimeout = millis() - 100; // end of input, kill timeout loop
+              serTimeout = millis() - 100; //kill timeout loop
               break;
             }
           }

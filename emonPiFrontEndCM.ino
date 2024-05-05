@@ -200,10 +200,10 @@ void setup() {
 
   EmonLibCM_setPulseEnable(0, EEProm.pulse_enable);       // Enable pulse counting
   EmonLibCM_setPulsePin(0, emonPi_int1_pin, emonPi_int1); // Pulse input Pin, Interrupt
-  EmonLibCM_setPulseMinPeriod(0, EEProm.pulse_period);    // Minimum pulse period
+  EmonLibCM_setPulseMinPeriod(0, EEProm.pulse_period, FALLING);    // Minimum pulse period
   EmonLibCM_setPulseEnable(1, EEProm.pulse2_enable);      // Enable pulse counting
   EmonLibCM_setPulsePin(1, emonPi_int1_pin, emonPi_int1); // Pulse input Pin, Interrupt
-  EmonLibCM_setPulseMinPeriod(1, EEProm.pulse_period);    // Minimum pulse period
+  EmonLibCM_setPulseMinPeriod(1, EEProm.pulse_period, FALLING);    // Minimum pulse period
 
   EmonLibCM_setTemperatureDataPin(4);   // OneWire data pin
   EmonLibCM_setTemperaturePowerPin(-1); // Temperature sensor Power Pin - Not used.
